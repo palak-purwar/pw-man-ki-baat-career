@@ -1,6 +1,7 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { Share } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface ResultsProps {
   quizData: {
@@ -62,6 +63,7 @@ const careerCombinations = {
 };
 
 const Results: React.FC<ResultsProps> = ({ quizData, onRestart }) => {
+  const { toast } = useToast();
   const isMatch = quizData.parentChoice.toLowerCase() === quizData.childChoice.toLowerCase();
   
   const getCombinedCareerPath = () => {
@@ -69,6 +71,41 @@ const Results: React.FC<ResultsProps> = ({ quizData, onRestart }) => {
   };
 
   const combinedPath = getCombinedCareerPath();
+
+  const handleShare = async () => {
+    const shareText = `🎯 Dream Quest Results! 🌟
+
+👨‍👩‍👧‍👦 Parent's Hope: ${quizData.parentChoice}
+🌟 Child's Dream: ${quizData.childChoice}
+🚀 Perfect Career Combination: ${combinedPath}
+
+${isMatch ? '🎉 Perfect Match! Great communication between parent and child!' : '🌈 Different dreams can work together beautifully!'}
+
+Try the quiz yourself: ${window.location.origin}
+
+#DreamQuest #CareerGoals #FamilyDreams`;
+
+    try {
+      if (navigator.share) {
+        // Use native share API for mobile devices (opens WhatsApp, social media, etc.)
+        await navigator.share({
+          title: 'Dream Quest Results',
+          text: shareText,
+          url: window.location.origin,
+        });
+      } else {
+        // Fallback for desktop - copy to clipboard
+        await navigator.clipboard.writeText(shareText);
+        toast({
+          title: "Copied to clipboard! 📋",
+          description: "Share your results with family and friends!",
+        });
+      }
+    } catch (error) {
+      // Fallback if both methods fail
+      console.log('Share cancelled or failed');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white p-4">
@@ -154,12 +191,22 @@ const Results: React.FC<ResultsProps> = ({ quizData, onRestart }) => {
         </div>
 
         <div className="text-center space-y-4">
-          <Button 
-            onClick={onRestart}
-            className="bg-orange-500 hover:bg-orange-600 text-white text-lg px-8 py-4 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200"
-          >
-            Play Again! 🎮
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Button 
+              onClick={onRestart}
+              className="bg-orange-500 hover:bg-orange-600 text-white text-lg px-8 py-4 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200"
+            >
+              Play Again! 🎮
+            </Button>
+            <Button 
+              onClick={handleShare}
+              variant="outline"
+              className="border-orange-500 text-orange-600 hover:bg-orange-50 text-lg px-8 py-4 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200"
+            >
+              <Share className="w-5 h-5 mr-2" />
+              Share Results! 📱
+            </Button>
+          </div>
           <p className="text-gray-600">
             Thanks for playing Dream Quest! Keep dreaming big! ✨
           </p>
