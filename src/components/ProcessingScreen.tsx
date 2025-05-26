@@ -1,12 +1,16 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProcessingScreenProps {
   onComplete: (data: { childClass: string; whatsappNumber: string }) => void;
+  quizData?: {
+    parentChoice: string;
+    childChoice: string;
+  };
 }
 
 const processingSteps = [
@@ -17,11 +21,13 @@ const processingSteps = [
   { text: "Finalizing recommendations...", progress: 100 }
 ];
 
-const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete }) => {
+const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizData }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [showForm, setShowForm] = useState(false);
   const [childClass, setChildClass] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [googleScriptUrl, setGoogleScriptUrl] = useState('');
+  const { toast } = useToast();
 
   useEffect(() => {
     // Show form immediately when processing starts
@@ -41,8 +47,63 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete }) => {
     return () => clearInterval(timer);
   }, []);
 
-  const handleSubmit = () => {
+  const sendToGoogleSheet = async (formData: {
+    parentChoice: string;
+    childChoice: string;
+    childClass: string;
+    whatsappNumber: string;
+  }) => {
+    if (!googleScriptUrl) {
+      console.log('No Google Script URL provided, skipping sheet integration');
+      return;
+    }
+
+    try {
+      const isMatch = formData.parentChoice.toLowerCase() === formData.childChoice.toLowerCase();
+      
+      const dataToSend = {
+        timestamp: new Date().toISOString(),
+        parentChoice: formData.parentChoice,
+        childChoice: formData.childChoice,
+        childClass: formData.childClass,
+        whatsappNumber: formData.whatsappNumber,
+        isMatch: isMatch,
+        matchStatus: isMatch ? 'Perfect Match' : 'Different Dreams',
+      };
+
+      console.log('Sending data to Google Sheet:', dataToSend);
+
+      const response = await fetch(googleScriptUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        mode: 'no-cors',
+        body: JSON.stringify(dataToSend),
+      });
+
+      // Since we're using no-cors, we can't read the response
+      // But we can assume it was sent successfully
+      console.log('Data sent to Google Sheet successfully');
+      
+    } catch (error) {
+      console.error('Error sending data to Google Sheet:', error);
+      // Don't show error to user as this is a background operation
+    }
+  };
+
+  const handleSubmit = async () => {
     if (childClass && whatsappNumber) {
+      // Send data to Google Sheet in the background
+      if (quizData) {
+        await sendToGoogleSheet({
+          parentChoice: quizData.parentChoice,
+          childChoice: quizData.childChoice,
+          childClass,
+          whatsappNumber,
+        });
+      }
+
       setTimeout(() => {
         onComplete({ childClass, whatsappNumber });
       }, 1000);
@@ -116,6 +177,23 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete }) => {
             </div>
             
             <div className="space-y-6">
+              <div>
+                <Label htmlFor="googleScript" className="text-gray-700 font-semibold">
+                  Google Apps Script URL (Optional)
+                </Label>
+                <Input
+                  id="googleScript"
+                  type="url"
+                  placeholder="Paste your Google Apps Script URL here..."
+                  value={googleScriptUrl}
+                  onChange={(e) => setGoogleScriptUrl(e.target.value)}
+                  className="mt-2 text-sm p-3"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Add your script URL to automatically save responses to Google Sheets
+                </p>
+              </div>
+
               <div>
                 <Label htmlFor="childClass" className="text-gray-700 font-semibold">
                   Child's Class *

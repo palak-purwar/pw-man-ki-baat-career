@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import ParentQuiz from '@/components/ParentQuiz';
@@ -125,7 +126,15 @@ const Index = () => {
   }
 
   if (phase === 'processing') {
-    return <ProcessingScreen onComplete={handleProcessingComplete} />;
+    return (
+      <ProcessingScreen 
+        onComplete={handleProcessingComplete} 
+        quizData={{
+          parentChoice: quizData.parentChoice,
+          childChoice: quizData.childChoice
+        }}
+      />
+    );
   }
 
   if (phase === 'results') {
