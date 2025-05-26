@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 
@@ -7,14 +6,12 @@ interface ParentQuizProps {
 }
 
 const careerOptions = [
-  { id: 'doctor', name: 'Doctor', emoji: '👩‍⚕️', description: 'Helping people stay healthy' },
-  { id: 'teacher', name: 'Teacher', emoji: '👩‍🏫', description: 'Inspiring young minds' },
+  { id: 'doctor', name: 'Doctor/Healthcare Professional', emoji: '👩‍⚕️', description: 'Helping people stay healthy' },
   { id: 'engineer', name: 'Engineer', emoji: '👩‍💻', description: 'Building the future' },
-  { id: 'artist', name: 'Artist', emoji: '🎨', description: 'Creating beautiful things' },
-  { id: 'scientist', name: 'Scientist', emoji: '🔬', description: 'Discovering new things' },
-  { id: 'athlete', name: 'Athlete', emoji: '🏃‍♀️', description: 'Staying strong and competitive' },
-  { id: 'entrepreneur', name: 'Entrepreneur', emoji: '💼', description: 'Starting their own business' },
-  { id: 'musician', name: 'Musician', emoji: '🎵', description: 'Making beautiful music' }
+  { id: 'teacher', name: 'Teacher/Educator', emoji: '👩‍🏫', description: 'Inspiring young minds' },
+  { id: 'defense', name: 'Police/Army/Defense Services', emoji: '👮‍♀️', description: 'Protecting and serving' },
+  { id: 'artist', name: 'Artist/Creative Fields', emoji: '🎨', description: 'Creating beautiful things' },
+  { id: 'sportsman', name: 'Sportsman', emoji: '🏃‍♀️', description: 'Athletic excellence' }
 ];
 
 const ParentQuiz: React.FC<ParentQuizProps> = ({ onComplete }) => {

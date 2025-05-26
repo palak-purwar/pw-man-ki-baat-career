@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 
@@ -7,18 +6,12 @@ interface ChildQuizProps {
 }
 
 const dreamJobs = [
-  { id: 'superhero', name: 'Superhero', emoji: '🦸‍♀️', description: 'Save the world!' },
-  { id: 'astronaut', name: 'Astronaut', emoji: '🚀', description: 'Explore space!' },
-  { id: 'doctor', name: 'Doctor', emoji: '👩‍⚕️', description: 'Help people feel better!' },
-  { id: 'teacher', name: 'Teacher', emoji: '👩‍🏫', description: 'Teach other kids!' },
-  { id: 'artist', name: 'Artist', emoji: '🎨', description: 'Make amazing art!' },
-  { id: 'chef', name: 'Chef', emoji: '👨‍🍳', description: 'Cook yummy food!' },
-  { id: 'firefighter', name: 'Firefighter', emoji: '🚒', description: 'Be a hero!' },
-  { id: 'musician', name: 'Musician', emoji: '🎵', description: 'Make awesome music!' },
-  { id: 'scientist', name: 'Scientist', emoji: '🔬', description: 'Discover cool things!' },
-  { id: 'athlete', name: 'Athlete', emoji: '🏃‍♀️', description: 'Win medals!' },
-  { id: 'gamer', name: 'Video Game Creator', emoji: '🎮', description: 'Make fun games!' },
-  { id: 'veterinarian', name: 'Veterinarian', emoji: '🐕', description: 'Help animals!' }
+  { id: 'doctor', name: 'Doctor/Healthcare Professional', emoji: '👩‍⚕️', description: 'Help people feel better!' },
+  { id: 'engineer', name: 'Engineer', emoji: '👩‍💻', description: 'Build amazing things!' },
+  { id: 'teacher', name: 'Teacher/Educator', emoji: '👩‍🏫', description: 'Teach other kids!' },
+  { id: 'defense', name: 'Police/Army/Defense Services', emoji: '👮‍♀️', description: 'Be a hero and protect!' },
+  { id: 'artist', name: 'Artist/Creative Fields', emoji: '🎨', description: 'Make amazing art!' },
+  { id: 'sportsman', name: 'Sportsman', emoji: '🏃‍♀️', description: 'Win medals and be strong!' }
 ];
 
 const ChildQuiz: React.FC<ChildQuizProps> = ({ onComplete }) => {
