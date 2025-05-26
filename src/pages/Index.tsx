@@ -1,22 +1,26 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import ParentQuiz from '@/components/ParentQuiz';
 import ChildQuiz from '@/components/ChildQuiz';
+import ProcessingScreen from '@/components/ProcessingScreen';
 import Results from '@/components/Results';
 
-type QuizPhase = 'welcome' | 'parent' | 'transition' | 'child' | 'results';
+type QuizPhase = 'welcome' | 'parent' | 'transition' | 'child' | 'processing' | 'results';
 
 interface QuizData {
   parentChoice: string;
   childChoice: string;
+  childAge: string;
+  whatsappNumber: string;
 }
 
 const Index = () => {
   const [phase, setPhase] = useState<QuizPhase>('welcome');
   const [quizData, setQuizData] = useState<QuizData>({
     parentChoice: '',
-    childChoice: ''
+    childChoice: '',
+    childAge: '',
+    whatsappNumber: ''
   });
 
   const handleParentComplete = (choice: string) => {
@@ -26,12 +30,17 @@ const Index = () => {
 
   const handleChildComplete = (choice: string) => {
     setQuizData(prev => ({ ...prev, childChoice: choice }));
+    setPhase('processing');
+  };
+
+  const handleProcessingComplete = (data: { childAge: string; whatsappNumber: string }) => {
+    setQuizData(prev => ({ ...prev, ...data }));
     setPhase('results');
   };
 
   const resetQuiz = () => {
     setPhase('welcome');
-    setQuizData({ parentChoice: '', childChoice: '' });
+    setQuizData({ parentChoice: '', childChoice: '', childAge: '', whatsappNumber: '' });
   };
 
   if (phase === 'welcome') {
@@ -113,6 +122,10 @@ const Index = () => {
 
   if (phase === 'child') {
     return <ChildQuiz onComplete={handleChildComplete} />;
+  }
+
+  if (phase === 'processing') {
+    return <ProcessingScreen onComplete={handleProcessingComplete} />;
   }
 
   if (phase === 'results') {

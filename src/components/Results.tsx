@@ -7,6 +7,8 @@ interface ResultsProps {
   quizData: {
     parentChoice: string;
     childChoice: string;
+    childAge: string;
+    whatsappNumber: string;
   };
   onRestart: () => void;
 }
@@ -76,7 +78,7 @@ const Results: React.FC<ResultsProps> = ({ quizData, onRestart }) => {
     const shareText = `🎯 Dream Quest Results! 🌟
 
 👨‍👩‍👧‍👦 Parent's Hope: ${quizData.parentChoice}
-🌟 Child's Dream: ${quizData.childChoice}
+🌟 Child's Dream (Age ${quizData.childAge}): ${quizData.childChoice}
 🚀 Perfect Career Combination: ${combinedPath}
 
 ${isMatch ? '🎉 Perfect Match! Great communication between parent and child!' : '🌈 Different dreams can work together beautifully!'}
