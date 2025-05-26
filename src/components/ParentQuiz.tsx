@@ -1,0 +1,81 @@
+
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+
+interface ParentQuizProps {
+  onComplete: (choice: string) => void;
+}
+
+const careerOptions = [
+  { id: 'doctor', name: 'Doctor', emoji: '👩‍⚕️', description: 'Helping people stay healthy' },
+  { id: 'teacher', name: 'Teacher', emoji: '👩‍🏫', description: 'Inspiring young minds' },
+  { id: 'engineer', name: 'Engineer', emoji: '👩‍💻', description: 'Building the future' },
+  { id: 'artist', name: 'Artist', emoji: '🎨', description: 'Creating beautiful things' },
+  { id: 'scientist', name: 'Scientist', emoji: '🔬', description: 'Discovering new things' },
+  { id: 'athlete', name: 'Athlete', emoji: '🏃‍♀️', description: 'Staying strong and competitive' },
+  { id: 'entrepreneur', name: 'Entrepreneur', emoji: '💼', description: 'Starting their own business' },
+  { id: 'musician', name: 'Musician', emoji: '🎵', description: 'Making beautiful music' }
+];
+
+const ParentQuiz: React.FC<ParentQuizProps> = ({ onComplete }) => {
+  const [selectedCareer, setSelectedCareer] = useState<string>('');
+
+  const handleSubmit = () => {
+    if (selectedCareer) {
+      const career = careerOptions.find(option => option.id === selectedCareer);
+      onComplete(career?.name || selectedCareer);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white p-4">
+      <div className="max-w-4xl mx-auto py-8">
+        <div className="text-center mb-8">
+          <div className="w-20 h-20 bg-orange-500 rounded-full mx-auto mb-6 flex items-center justify-center">
+            <span className="text-white text-3xl">👨‍👩‍👧‍👦</span>
+          </div>
+          <h1 className="text-3xl md:text-4xl font-bold text-orange-600 mb-4">
+            Dear Parent
+          </h1>
+          <p className="text-xl text-gray-700">
+            What do you hope your child becomes when they grow up?
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {careerOptions.map((option) => (
+            <div
+              key={option.id}
+              onClick={() => setSelectedCareer(option.id)}
+              className={`
+                p-6 rounded-xl border-2 cursor-pointer transition-all duration-200 transform hover:scale-105
+                ${selectedCareer === option.id 
+                  ? 'border-orange-500 bg-orange-100 shadow-lg' 
+                  : 'border-gray-200 bg-white hover:border-orange-300 hover:shadow-md'
+                }
+              `}
+            >
+              <div className="text-center">
+                <div className="text-4xl mb-3">{option.emoji}</div>
+                <h3 className="font-semibold text-gray-800 mb-2">{option.name}</h3>
+                <p className="text-sm text-gray-600">{option.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="text-center">
+          <Button 
+            onClick={handleSubmit}
+            disabled={!selectedCareer}
+            className="bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 text-white text-lg px-8 py-4 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200"
+          >
+            That's my choice! ✨
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ParentQuiz;
