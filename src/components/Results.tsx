@@ -209,8 +209,15 @@ Try the quiz yourself: ${window.location.origin}
             </Button>
           </div>
           <p className="text-gray-600">
-            Thanks for playing Dream Quest! Keep dreaming big! ✨
+            Thanks for playing Mann Ki Baat: Career Edition! Keep dreaming big! ✨
           </p>
+          
+          {/* PhysicsWallah Footer */}
+          <div className="text-center mt-4">
+            <p className="text-gray-400 text-sm font-light">
+              Created with Care by PhysicsWallah 💙
+            </p>
+          </div>
         </div>
       </div>
 

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import ParentQuiz from '@/components/ParentQuiz';
@@ -53,7 +52,7 @@ const Index = () => {
               <span className="text-white text-4xl">👨‍👩‍👧‍👦</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-bold text-orange-600 mb-4">
-              Dream Quest
+              Mann Ki Baat: Career Edition
             </h1>
             <p className="text-xl text-gray-700 mb-8">
               A fun quiz to discover what parents dream for their kids... and what kids dream for themselves!
@@ -88,6 +87,13 @@ const Index = () => {
           >
             Start the Adventure! 🚀
           </Button>
+          
+          {/* PhysicsWallah Footer */}
+          <div className="text-center mt-8">
+            <p className="text-gray-400 text-sm font-light">
+              Created with Care by PhysicsWallah 💙
+            </p>
+          </div>
         </div>
       </div>
     );

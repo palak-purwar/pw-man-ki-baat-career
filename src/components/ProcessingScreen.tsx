@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +25,58 @@ const processingSteps = [
 // Hardcoded Google Apps Script URL
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw4BJbIXZsAVM0QsbFPkA_DIxj9mt4CaJzH_-Cf6xbluSVA2iWRs3iwYG6X3uf2UzeZSw/exec';
 
+// Career combinations mapping
+const careerCombinations = {
+  'Doctor/Healthcare Professional': {
+    'Doctor/Healthcare Professional': 'Healthcare',
+    'Engineer': 'Biomedical Engineering, Med Tech',
+    'Teacher/Educator': 'Medical Educator, Health Coach',
+    'Police/Army/Defense Services': 'Forensic Medicine, Medical Corps',
+    'Artist/Creative Fields': 'Medical Illustration, Health Communication',
+    'Sportsman': 'Sports Medicine, Physiotherapy'
+  },
+  'Engineer': {
+    'Doctor/Healthcare Professional': 'Biomedical Engineering, Med Tech',
+    'Engineer': 'Engineering',
+    'Teacher/Educator': 'STEM Teacher, Tech Trainer',
+    'Police/Army/Defense Services': 'Defense Technology, Engineering Corps',
+    'Artist/Creative Fields': 'UX/UI Design, Creative Tech',
+    'Sportsman': 'Sports Equipment Design, Tech in Sports'
+  },
+  'Teacher/Educator': {
+    'Doctor/Healthcare Professional': 'Health Educator, Public Health',
+    'Engineer': 'STEM Education, EdTech Developer',
+    'Teacher/Educator': 'Teaching',
+    'Police/Army/Defense Services': 'Police Academy Instructor',
+    'Artist/Creative Fields': 'Arts Educator, Creative Workshop',
+    'Sportsman': 'Physical Education Teacher, Sports Coaching'
+  },
+  'Police/Army/Defense Services': {
+    'Doctor/Healthcare Professional': 'Medical Corps, Paramedic',
+    'Engineer': 'Defense Technology, Cybersecurity',
+    'Teacher/Educator': 'Training Officer, Leadership Coach',
+    'Police/Army/Defense Services': 'Defense Services',
+    'Artist/Creative Fields': 'Crisis Communication, Tactical Media',
+    'Sportsman': 'Physical Training Instructor, Sports in Defense'
+  },
+  'Artist/Creative Fields': {
+    'Doctor/Healthcare Professional': 'Medical Illustration, Therapeutic Arts',
+    'Engineer': 'Creative Tech, Animation Engineering',
+    'Teacher/Educator': 'Arts Educator, Drama Teacher',
+    'Police/Army/Defense Services': 'Media Relations, Creative Communication',
+    'Artist/Creative Fields': 'Creative Fields',
+    'Sportsman': 'Sports Branding, Performance Arts'
+  },
+  'Sportsman': {
+    'Doctor/Healthcare Professional': 'Sports Medicine, Physiotherapy',
+    'Engineer': 'Sports Tech, Equipment Design',
+    'Teacher/Educator': 'Physical Education Teacher, Coach',
+    'Police/Army/Defense Services': 'Physical Training Instructor',
+    'Artist/Creative Fields': 'Sports Branding, Sports Media',
+    'Sportsman': 'Professional Athlete, Sports Management'
+  }
+};
+
 const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizData }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [showForm, setShowForm] = useState(false);
@@ -49,6 +102,11 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizDat
     return () => clearInterval(timer);
   }, []);
 
+  const getCombinedCareerPath = () => {
+    if (!quizData) return 'Exciting new possibilities await!';
+    return careerCombinations[quizData.parentChoice as keyof typeof careerCombinations]?.[quizData.childChoice as keyof typeof careerCombinations[keyof typeof careerCombinations]] || 'Exciting new possibilities await!';
+  };
+
   const sendToGoogleSheet = async (formData: {
     parentChoice: string;
     childChoice: string;
@@ -57,6 +115,7 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizDat
   }) => {
     try {
       const isMatch = formData.parentChoice.toLowerCase() === formData.childChoice.toLowerCase();
+      const suggestedCareer = getCombinedCareerPath();
       
       const dataToSend = {
         timestamp: new Date().toISOString(),
@@ -66,6 +125,7 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizDat
         whatsappNumber: formData.whatsappNumber,
         isMatch: isMatch,
         matchStatus: isMatch ? 'Perfect Match' : 'Different Dreams',
+        suggestedCareer: suggestedCareer,
       };
 
       console.log('Sending data to Google Sheet:', dataToSend);
@@ -90,24 +150,36 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizDat
   };
 
   const handleSubmit = async () => {
-    if (childClass && whatsappNumber) {
-      // Send data to Google Sheet in the background
-      if (quizData) {
-        await sendToGoogleSheet({
-          parentChoice: quizData.parentChoice,
-          childChoice: quizData.childChoice,
-          childClass,
-          whatsappNumber,
-        });
-      }
-
-      setTimeout(() => {
-        onComplete({ childClass, whatsappNumber });
-      }, 1000);
+    // Send data to Google Sheet in the background
+    if (quizData) {
+      await sendToGoogleSheet({
+        parentChoice: quizData.parentChoice,
+        childChoice: quizData.childChoice,
+        childClass: childClass || 'Not specified',
+        whatsappNumber: whatsappNumber || 'Not provided',
+      });
     }
+
+    setTimeout(() => {
+      onComplete({ childClass: childClass || 'Not specified', whatsappNumber: whatsappNumber || 'Not provided' });
+    }, 1000);
   };
 
-  const isFormValid = childClass && whatsappNumber;
+  const handleSkip = async () => {
+    // Send data with default values
+    if (quizData) {
+      await sendToGoogleSheet({
+        parentChoice: quizData.parentChoice,
+        childChoice: quizData.childChoice,
+        childClass: 'Skipped',
+        whatsappNumber: 'Skipped',
+      });
+    }
+
+    setTimeout(() => {
+      onComplete({ childClass: 'Not specified', whatsappNumber: 'Not provided' });
+    }, 1000);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 p-4 flex items-center justify-center">
@@ -122,7 +194,7 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizDat
             </div>
           </div>
           <h1 className="text-4xl font-bold text-white mb-4">
-            AI Career Analysis
+            Mann Ki Baat: Career Edition
           </h1>
           <p className="text-xl text-blue-200">
             Processing your family's dream compatibility...
@@ -166,21 +238,21 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizDat
           <div className="bg-white/90 backdrop-blur-lg rounded-2xl p-8 animate-fade-in">
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                Child Details Required 🎯
+                Child Details (Optional) 🎯
               </h2>
               <p className="text-gray-600">
-                Please provide the following details:
+                Help us personalize your experience:
               </p>
             </div>
             
             <div className="space-y-6">
               <div>
                 <Label htmlFor="childClass" className="text-gray-700 font-semibold">
-                  Child's Class *
+                  Child's Class
                 </Label>
                 <Select value={childClass} onValueChange={setChildClass}>
                   <SelectTrigger className="mt-2 text-lg p-4">
-                    <SelectValue placeholder="Select class" />
+                    <SelectValue placeholder="Select class (optional)" />
                   </SelectTrigger>
                   <SelectContent>
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((classNum) => (
@@ -194,16 +266,15 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizDat
               
               <div>
                 <Label htmlFor="whatsapp" className="text-gray-700 font-semibold">
-                  WhatsApp Number *
+                  WhatsApp Number
                 </Label>
                 <Input
                   id="whatsapp"
                   type="tel"
-                  placeholder="e.g., +1234567890"
+                  placeholder="e.g., +1234567890 (optional)"
                   value={whatsappNumber}
                   onChange={(e) => setWhatsappNumber(e.target.value)}
                   className="mt-2 text-lg p-4"
-                  required
                 />
                 <p className="text-sm text-gray-500 mt-1">
                   No updates, just for personalized tips
@@ -211,17 +282,31 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizDat
               </div>
             </div>
 
-            <div className="text-center mt-8">
+            <div className="text-center mt-8 space-y-4">
               <Button
                 onClick={handleSubmit}
-                disabled={!isFormValid}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-xl px-12 py-4 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none"
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-xl px-12 py-4 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 w-full"
               >
                 Generate My Results! ✨
+              </Button>
+              
+              <Button
+                onClick={handleSkip}
+                variant="ghost"
+                className="text-gray-600 hover:text-gray-800 text-lg px-8 py-2 w-full"
+              >
+                Skip and continue →
               </Button>
             </div>
           </div>
         )}
+
+        {/* PhysicsWallah Footer */}
+        <div className="text-center mt-8">
+          <p className="text-blue-200/60 text-sm font-light">
+            Created with Care by PhysicsWallah 💙
+          </p>
+        </div>
 
         {/* Floating Scientific Elements */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden">
