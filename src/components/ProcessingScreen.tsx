@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 interface ProcessingScreenProps {
-  onComplete: (data: { childAge: string; whatsappNumber: string }) => void;
+  onComplete: (data: { childAge: string; childClass: string; whatsappNumber: string }) => void;
 }
 
 const processingSteps = [
@@ -20,6 +20,7 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [showForm, setShowForm] = useState(false);
   const [childAge, setChildAge] = useState('');
+  const [childClass, setChildClass] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
 
   useEffect(() => {
@@ -39,14 +40,16 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete }) => {
   }, []);
 
   const handleSubmit = () => {
-    if (childAge && whatsappNumber) {
-      setTimeout(() => {
-        onComplete({ childAge, whatsappNumber });
-      }, 1000);
-    }
+    setTimeout(() => {
+      onComplete({ childAge, childClass, whatsappNumber });
+    }, 1000);
   };
 
-  const isFormValid = childAge && whatsappNumber.length >= 10;
+  const handleSkip = () => {
+    setTimeout(() => {
+      onComplete({ childAge: '', childClass: '', whatsappNumber: '' });
+    }, 1000);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 p-4 flex items-center justify-center">
@@ -108,14 +111,14 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete }) => {
                 Almost Ready! 🎯
               </h2>
               <p className="text-gray-600">
-                Help us personalize your results with a few quick details:
+                Help us personalize your results (optional):
               </p>
             </div>
             
             <div className="space-y-6">
               <div>
                 <Label htmlFor="childAge" className="text-gray-700 font-semibold">
-                  Your child's age
+                  Your child's age (optional)
                 </Label>
                 <Input
                   id="childAge"
@@ -128,10 +131,24 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete }) => {
                   max="18"
                 />
               </div>
+
+              <div>
+                <Label htmlFor="childClass" className="text-gray-700 font-semibold">
+                  Your child's class/grade (optional)
+                </Label>
+                <Input
+                  id="childClass"
+                  type="text"
+                  placeholder="e.g., Grade 3, Class 5"
+                  value={childClass}
+                  onChange={(e) => setChildClass(e.target.value)}
+                  className="mt-2 text-lg p-4"
+                />
+              </div>
               
               <div>
                 <Label htmlFor="whatsapp" className="text-gray-700 font-semibold">
-                  Your WhatsApp number (optional updates)
+                  Your WhatsApp number (optional)
                 </Label>
                 <Input
                   id="whatsapp"
@@ -142,19 +159,27 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete }) => {
                   className="mt-2 text-lg p-4"
                 />
                 <p className="text-sm text-gray-500 mt-1">
-                  We'll occasionally share career tips and opportunities
+                  No updates, just for personalized tips
                 </p>
               </div>
             </div>
 
-            <div className="text-center mt-8">
+            <div className="text-center mt-8 space-y-4">
               <Button
                 onClick={handleSubmit}
-                disabled={!isFormValid}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-xl px-12 py-4 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-xl px-12 py-4 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200"
               >
                 Generate My Results! ✨
               </Button>
+              <div>
+                <Button
+                  onClick={handleSkip}
+                  variant="ghost"
+                  className="text-gray-600 hover:text-gray-800"
+                >
+                  Skip and see results →
+                </Button>
+              </div>
             </div>
           </div>
         )}

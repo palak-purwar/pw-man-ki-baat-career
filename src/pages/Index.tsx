@@ -11,6 +11,7 @@ interface QuizData {
   parentChoice: string;
   childChoice: string;
   childAge: string;
+  childClass: string;
   whatsappNumber: string;
 }
 
@@ -20,6 +21,7 @@ const Index = () => {
     parentChoice: '',
     childChoice: '',
     childAge: '',
+    childClass: '',
     whatsappNumber: ''
   });
 
@@ -33,14 +35,14 @@ const Index = () => {
     setPhase('processing');
   };
 
-  const handleProcessingComplete = (data: { childAge: string; whatsappNumber: string }) => {
+  const handleProcessingComplete = (data: { childAge: string; childClass: string; whatsappNumber: string }) => {
     setQuizData(prev => ({ ...prev, ...data }));
     setPhase('results');
   };
 
   const resetQuiz = () => {
     setPhase('welcome');
-    setQuizData({ parentChoice: '', childChoice: '', childAge: '', whatsappNumber: '' });
+    setQuizData({ parentChoice: '', childChoice: '', childAge: '', childClass: '', whatsappNumber: '' });
   };
 
   if (phase === 'welcome') {

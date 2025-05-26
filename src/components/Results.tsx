@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Share } from 'lucide-react';
@@ -8,6 +9,7 @@ interface ResultsProps {
     parentChoice: string;
     childChoice: string;
     childAge: string;
+    childClass: string;
     whatsappNumber: string;
   };
   onRestart: () => void;
@@ -75,10 +77,14 @@ const Results: React.FC<ResultsProps> = ({ quizData, onRestart }) => {
   const combinedPath = getCombinedCareerPath();
 
   const handleShare = async () => {
+    const ageText = quizData.childAge ? ` (Age ${quizData.childAge}` : '';
+    const classText = quizData.childClass ? `, ${quizData.childClass}` : '';
+    const childDetails = ageText || classText ? `${ageText}${classText})` : '';
+
     const shareText = `🎯 Dream Quest Results! 🌟
 
 👨‍👩‍👧‍👦 Parent's Hope: ${quizData.parentChoice}
-🌟 Child's Dream (Age ${quizData.childAge}): ${quizData.childChoice}
+🌟 Child's Dream${childDetails}: ${quizData.childChoice}
 🚀 Perfect Career Combination: ${combinedPath}
 
 ${isMatch ? '🎉 Perfect Match! Great communication between parent and child!' : '🌈 Different dreams can work together beautifully!'}
