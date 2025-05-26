@@ -21,12 +21,14 @@ const processingSteps = [
   { text: "Finalizing recommendations...", progress: 100 }
 ];
 
+// Hardcoded Google Apps Script URL
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw4BJbIXZsAVM0QsbFPkA_DIxj9mt4CaJzH_-Cf6xbluSVA2iWRs3iwYG6X3uf2UzeZSw/exec';
+
 const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizData }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [showForm, setShowForm] = useState(false);
   const [childClass, setChildClass] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
-  const [googleScriptUrl, setGoogleScriptUrl] = useState('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -53,11 +55,6 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizDat
     childClass: string;
     whatsappNumber: string;
   }) => {
-    if (!googleScriptUrl) {
-      console.log('No Google Script URL provided, skipping sheet integration');
-      return;
-    }
-
     try {
       const isMatch = formData.parentChoice.toLowerCase() === formData.childChoice.toLowerCase();
       
@@ -73,7 +70,7 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizDat
 
       console.log('Sending data to Google Sheet:', dataToSend);
 
-      const response = await fetch(googleScriptUrl, {
+      const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -177,23 +174,6 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizDat
             </div>
             
             <div className="space-y-6">
-              <div>
-                <Label htmlFor="googleScript" className="text-gray-700 font-semibold">
-                  Google Apps Script URL (Optional)
-                </Label>
-                <Input
-                  id="googleScript"
-                  type="url"
-                  placeholder="Paste your Google Apps Script URL here..."
-                  value={googleScriptUrl}
-                  onChange={(e) => setGoogleScriptUrl(e.target.value)}
-                  className="mt-2 text-sm p-3"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Add your script URL to automatically save responses to Google Sheets
-                </p>
-              </div>
-
               <div>
                 <Label htmlFor="childClass" className="text-gray-700 font-semibold">
                   Child's Class *
