@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Share } from 'lucide-react';
@@ -8,7 +7,6 @@ interface ResultsProps {
   quizData: {
     parentChoice: string;
     childChoice: string;
-    childAge: string;
     childClass: string;
     whatsappNumber: string;
   };
@@ -77,14 +75,12 @@ const Results: React.FC<ResultsProps> = ({ quizData, onRestart }) => {
   const combinedPath = getCombinedCareerPath();
 
   const handleShare = async () => {
-    const ageText = quizData.childAge ? ` (Age ${quizData.childAge}` : '';
-    const classText = quizData.childClass ? `, ${quizData.childClass}` : '';
-    const childDetails = ageText || classText ? `${ageText}${classText})` : '';
+    const classText = quizData.childClass ? ` (Class ${quizData.childClass})` : '';
 
     const shareText = `🎯 Dream Quest Results! 🌟
 
 👨‍👩‍👧‍👦 Parent's Hope: ${quizData.parentChoice}
-🌟 Child's Dream${childDetails}: ${quizData.childChoice}
+🌟 Child's Dream${classText}: ${quizData.childChoice}
 🚀 Perfect Career Combination: ${combinedPath}
 
 ${isMatch ? '🎉 Perfect Match! Great communication between parent and child!' : '🌈 Different dreams can work together beautifully!'}
@@ -95,14 +91,12 @@ Try the quiz yourself: ${window.location.origin}
 
     try {
       if (navigator.share) {
-        // Use native share API for mobile devices (opens WhatsApp, social media, etc.)
         await navigator.share({
           title: 'Dream Quest Results',
           text: shareText,
           url: window.location.origin,
         });
       } else {
-        // Fallback for desktop - copy to clipboard
         await navigator.clipboard.writeText(shareText);
         toast({
           title: "Copied to clipboard! 📋",
@@ -110,13 +104,12 @@ Try the quiz yourself: ${window.location.origin}
         });
       }
     } catch (error) {
-      // Fallback if both methods fail
       console.log('Share cancelled or failed');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white p-4">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white p-4 pb-24">
       <div className="max-w-3xl mx-auto py-8">
         <div className="text-center mb-8">
           <div className={`w-32 h-32 rounded-full mx-auto mb-6 flex items-center justify-center ${
@@ -202,14 +195,14 @@ Try the quiz yourself: ${window.location.origin}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button 
               onClick={onRestart}
-              className="bg-orange-500 hover:bg-orange-600 text-white text-lg px-8 py-4 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200"
+              className="bg-orange-500 hover:bg-orange-600 text-white text-lg px-8 py-4 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 w-full sm:w-auto"
             >
               Play Again! 🎮
             </Button>
             <Button 
               onClick={handleShare}
               variant="outline"
-              className="border-orange-500 text-orange-600 hover:bg-orange-50 text-lg px-8 py-4 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200"
+              className="border-orange-500 text-orange-600 hover:bg-orange-50 text-lg px-8 py-4 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 w-full sm:w-auto"
             >
               <Share className="w-5 h-5 mr-2" />
               Share Results! 📱
@@ -218,6 +211,26 @@ Try the quiz yourself: ${window.location.origin}
           <p className="text-gray-600">
             Thanks for playing Dream Quest! Keep dreaming big! ✨
           </p>
+        </div>
+      </div>
+
+      {/* Floating Action Buttons */}
+      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+        <div className="flex flex-col sm:flex-row gap-4 items-center bg-white/90 backdrop-blur-lg p-4 rounded-2xl shadow-2xl border border-orange-200">
+          <Button 
+            onClick={onRestart}
+            className="bg-orange-500 hover:bg-orange-600 text-white text-lg px-8 py-4 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 w-full sm:w-auto"
+          >
+            Play Again! 🎮
+          </Button>
+          <Button 
+            onClick={handleShare}
+            variant="outline"
+            className="border-orange-500 text-orange-600 hover:bg-orange-50 text-lg px-8 py-4 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 w-full sm:w-auto"
+          >
+            <Share className="w-5 h-5 mr-2" />
+            Share Results! 📱
+          </Button>
         </div>
       </div>
     </div>

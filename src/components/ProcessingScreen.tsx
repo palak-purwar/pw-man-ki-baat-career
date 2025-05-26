@@ -3,9 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ProcessingScreenProps {
-  onComplete: (data: { childAge: string; childClass: string; whatsappNumber: string }) => void;
+  onComplete: (data: { childClass: string; whatsappNumber: string }) => void;
 }
 
 const processingSteps = [
@@ -19,17 +20,18 @@ const processingSteps = [
 const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [showForm, setShowForm] = useState(false);
-  const [childAge, setChildAge] = useState('');
   const [childClass, setChildClass] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
 
   useEffect(() => {
+    // Show form immediately when processing starts
+    setShowForm(true);
+    
     const timer = setInterval(() => {
       setCurrentStep(prev => {
         if (prev < processingSteps.length - 1) {
           return prev + 1;
         } else {
-          setShowForm(true);
           clearInterval(timer);
           return prev;
         }
@@ -40,16 +42,14 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete }) => {
   }, []);
 
   const handleSubmit = () => {
-    setTimeout(() => {
-      onComplete({ childAge, childClass, whatsappNumber });
-    }, 1000);
+    if (childClass && whatsappNumber) {
+      setTimeout(() => {
+        onComplete({ childClass, whatsappNumber });
+      }, 1000);
+    }
   };
 
-  const handleSkip = () => {
-    setTimeout(() => {
-      onComplete({ childAge: '', childClass: '', whatsappNumber: '' });
-    }, 1000);
-  };
+  const isFormValid = childClass && whatsappNumber;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 p-4 flex items-center justify-center">
@@ -108,47 +108,35 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete }) => {
           <div className="bg-white/90 backdrop-blur-lg rounded-2xl p-8 animate-fade-in">
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                Almost Ready! 🎯
+                Child Details Required 🎯
               </h2>
               <p className="text-gray-600">
-                Help us personalize your results (optional):
+                Please provide the following details:
               </p>
             </div>
             
             <div className="space-y-6">
               <div>
-                <Label htmlFor="childAge" className="text-gray-700 font-semibold">
-                  Your child's age (optional)
-                </Label>
-                <Input
-                  id="childAge"
-                  type="number"
-                  placeholder="e.g., 8"
-                  value={childAge}
-                  onChange={(e) => setChildAge(e.target.value)}
-                  className="mt-2 text-lg p-4"
-                  min="1"
-                  max="18"
-                />
-              </div>
-
-              <div>
                 <Label htmlFor="childClass" className="text-gray-700 font-semibold">
-                  Your child's class/grade (optional)
+                  Child's Class *
                 </Label>
-                <Input
-                  id="childClass"
-                  type="text"
-                  placeholder="e.g., Grade 3, Class 5"
-                  value={childClass}
-                  onChange={(e) => setChildClass(e.target.value)}
-                  className="mt-2 text-lg p-4"
-                />
+                <Select value={childClass} onValueChange={setChildClass}>
+                  <SelectTrigger className="mt-2 text-lg p-4">
+                    <SelectValue placeholder="Select class" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((classNum) => (
+                      <SelectItem key={classNum} value={classNum.toString()}>
+                        Class {classNum}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               
               <div>
                 <Label htmlFor="whatsapp" className="text-gray-700 font-semibold">
-                  Your WhatsApp number (optional)
+                  WhatsApp Number *
                 </Label>
                 <Input
                   id="whatsapp"
@@ -157,6 +145,7 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete }) => {
                   value={whatsappNumber}
                   onChange={(e) => setWhatsappNumber(e.target.value)}
                   className="mt-2 text-lg p-4"
+                  required
                 />
                 <p className="text-sm text-gray-500 mt-1">
                   No updates, just for personalized tips
@@ -164,22 +153,14 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete }) => {
               </div>
             </div>
 
-            <div className="text-center mt-8 space-y-4">
+            <div className="text-center mt-8">
               <Button
                 onClick={handleSubmit}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-xl px-12 py-4 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200"
+                disabled={!isFormValid}
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-xl px-12 py-4 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none"
               >
                 Generate My Results! ✨
               </Button>
-              <div>
-                <Button
-                  onClick={handleSkip}
-                  variant="ghost"
-                  className="text-gray-600 hover:text-gray-800"
-                >
-                  Skip and see results →
-                </Button>
-              </div>
             </div>
           </div>
         )}

@@ -10,7 +10,6 @@ type QuizPhase = 'welcome' | 'parent' | 'transition' | 'child' | 'processing' | 
 interface QuizData {
   parentChoice: string;
   childChoice: string;
-  childAge: string;
   childClass: string;
   whatsappNumber: string;
 }
@@ -20,7 +19,6 @@ const Index = () => {
   const [quizData, setQuizData] = useState<QuizData>({
     parentChoice: '',
     childChoice: '',
-    childAge: '',
     childClass: '',
     whatsappNumber: ''
   });
@@ -35,14 +33,14 @@ const Index = () => {
     setPhase('processing');
   };
 
-  const handleProcessingComplete = (data: { childAge: string; childClass: string; whatsappNumber: string }) => {
+  const handleProcessingComplete = (data: { childClass: string; whatsappNumber: string }) => {
     setQuizData(prev => ({ ...prev, ...data }));
     setPhase('results');
   };
 
   const resetQuiz = () => {
     setPhase('welcome');
-    setQuizData({ parentChoice: '', childChoice: '', childAge: '', childClass: '', whatsappNumber: '' });
+    setQuizData({ parentChoice: '', childChoice: '', childClass: '', whatsappNumber: '' });
   };
 
   if (phase === 'welcome') {
