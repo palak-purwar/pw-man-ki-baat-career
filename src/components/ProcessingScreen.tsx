@@ -22,7 +22,7 @@ const processingSteps = [
 ];
 
 // Updated Google Apps Script URL for career suggestions
-const CAREER_API_URL = 'https://script.google.com/macros/s/AKfycbzLndr54hIJLlaxraj6_Ydutt0RA2N3JgyC73rnOT9R7BMEpjmpqHAIgtVnl-jTbko8/exec';
+const CAREER_API_URL = 'https://script.google.com/macros/s/AKfycbyevSps0MQINwzF2y9tDKQY3MwI3R4xtBMcFTK6aMq2BG0P9XCCA1zPHBg7VBqDfsYX/exec';
 
 // Hardcoded Google Apps Script URL for data logging
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw4BJbIXZsAVM0QsbFPkA_DIxj9mt4CaJzH_-Cf6xbluSVA2iWRs3iwYG6X3uf2UzeZSw/exec';
