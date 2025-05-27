@@ -10,70 +10,21 @@ interface ResultsProps {
     childChoice: string;
     childClass: string;
     whatsappNumber: string;
+    apiCareerSuggestion: string;
   };
   onRestart: () => void;
 }
-
-const careerCombinations = {
-  'Doctor/Healthcare Professional': {
-    'Doctor/Healthcare Professional': 'Healthcare',
-    'Engineer': 'Biomedical Engineering, Med Tech',
-    'Teacher/Educator': 'Medical Educator, Health Coach',
-    'Police/Army/Defense Services': 'Forensic Medicine, Medical Corps',
-    'Artist/Creative Fields': 'Medical Illustration, Health Communication',
-    'Sportsman': 'Sports Medicine, Physiotherapy'
-  },
-  'Engineer': {
-    'Doctor/Healthcare Professional': 'Biomedical Engineering, Med Tech',
-    'Engineer': 'Engineering',
-    'Teacher/Educator': 'STEM Teacher, Tech Trainer',
-    'Police/Army/Defense Services': 'Defense Technology, Engineering Corps',
-    'Artist/Creative Fields': 'UX/UI Design, Creative Tech',
-    'Sportsman': 'Sports Equipment Design, Tech in Sports'
-  },
-  'Teacher/Educator': {
-    'Doctor/Healthcare Professional': 'Health Educator, Public Health',
-    'Engineer': 'STEM Education, EdTech Developer',
-    'Teacher/Educator': 'Teaching',
-    'Police/Army/Defense Services': 'Police Academy Instructor',
-    'Artist/Creative Fields': 'Arts Educator, Creative Workshop',
-    'Sportsman': 'Physical Education Teacher, Sports Coaching'
-  },
-  'Police/Army/Defense Services': {
-    'Doctor/Healthcare Professional': 'Medical Corps, Paramedic',
-    'Engineer': 'Defense Technology, Cybersecurity',
-    'Teacher/Educator': 'Training Officer, Leadership Coach',
-    'Police/Army/Defense Services': 'Defense Services',
-    'Artist/Creative Fields': 'Crisis Communication, Tactical Media',
-    'Sportsman': 'Physical Training Instructor, Sports in Defense'
-  },
-  'Artist/Creative Fields': {
-    'Doctor/Healthcare Professional': 'Medical Illustration, Therapeutic Arts',
-    'Engineer': 'Creative Tech, Animation Engineering',
-    'Teacher/Educator': 'Arts Educator, Drama Teacher',
-    'Police/Army/Defense Services': 'Media Relations, Creative Communication',
-    'Artist/Creative Fields': 'Creative Fields',
-    'Sportsman': 'Sports Branding, Performance Arts'
-  },
-  'Sportsman': {
-    'Doctor/Healthcare Professional': 'Sports Medicine, Physiotherapy',
-    'Engineer': 'Sports Tech, Equipment Design',
-    'Teacher/Educator': 'Physical Education Teacher, Coach',
-    'Police/Army/Defense Services': 'Physical Training Instructor',
-    'Artist/Creative Fields': 'Sports Branding, Sports Media',
-    'Sportsman': 'Professional Athlete, Sports Management'
-  }
-};
 
 const Results: React.FC<ResultsProps> = ({ quizData, onRestart }) => {
   const { toast } = useToast();
   const isMatch = quizData.parentChoice.toLowerCase() === quizData.childChoice.toLowerCase();
   
-  const getCombinedCareerPath = () => {
-    return careerCombinations[quizData.parentChoice as keyof typeof careerCombinations]?.[quizData.childChoice as keyof typeof careerCombinations[keyof typeof careerCombinations]] || 'Exciting new possibilities await!';
+  const formatCareerSuggestion = (suggestion: string) => {
+    // Format the API response for better display
+    return suggestion || 'Exciting new possibilities await! Your unique combination of interests opens doors to innovative career paths.';
   };
 
-  const combinedPath = getCombinedCareerPath();
+  const combinedPath = formatCareerSuggestion(quizData.apiCareerSuggestion);
 
   const handleShare = async () => {
     const classText = quizData.childClass ? ` (Class ${quizData.childClass})` : '';
@@ -145,7 +96,7 @@ Try the quiz yourself: ${window.location.origin}
           </div>
         </div>
 
-        {/* Combined Career Path Section */}
+        {/* API-Generated Career Path Section */}
         <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl shadow-lg p-8 mb-8">
           <div className="text-center">
             <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mx-auto mb-6 flex items-center justify-center">
@@ -157,7 +108,7 @@ Try the quiz yourself: ${window.location.origin}
             </p>
             <div className="bg-white p-6 rounded-xl shadow-md">
               <h3 className="text-xl font-semibold text-purple-600 mb-3">Your Combined Path:</h3>
-              <p className="text-2xl font-bold text-gray-800">{combinedPath}</p>
+              <div className="text-lg text-gray-800 whitespace-pre-line">{combinedPath}</div>
             </div>
           </div>
         </div>

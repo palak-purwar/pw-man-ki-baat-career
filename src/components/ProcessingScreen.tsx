@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 
 interface ProcessingScreenProps {
-  onComplete: (data: { childClass: string; whatsappNumber: string }) => void;
+  onComplete: (data: { childClass: string; whatsappNumber: string; apiCareerSuggestion: string }) => void;
   quizData?: {
     parentChoice: string;
     childChoice: string;
@@ -22,65 +22,18 @@ const processingSteps = [
   { text: "Finalizing recommendations...", progress: 100 }
 ];
 
-// Hardcoded Google Apps Script URL
+// Hardcoded Google Apps Script URL for data logging
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw4BJbIXZsAVM0QsbFPkA_DIxj9mt4CaJzH_-Cf6xbluSVA2iWRs3iwYG6X3uf2UzeZSw/exec';
 
-// Career combinations mapping
-const careerCombinations = {
-  'Doctor/Healthcare Professional': {
-    'Doctor/Healthcare Professional': 'Healthcare',
-    'Engineer': 'Biomedical Engineering, Med Tech',
-    'Teacher/Educator': 'Medical Educator, Health Coach',
-    'Police/Army/Defense Services': 'Forensic Medicine, Medical Corps',
-    'Artist/Creative Fields': 'Medical Illustration, Health Communication',
-    'Sportsman': 'Sports Medicine, Physiotherapy'
-  },
-  'Engineer': {
-    'Doctor/Healthcare Professional': 'Biomedical Engineering, Med Tech',
-    'Engineer': 'Engineering',
-    'Teacher/Educator': 'STEM Teacher, Tech Trainer',
-    'Police/Army/Defense Services': 'Defense Technology, Engineering Corps',
-    'Artist/Creative Fields': 'UX/UI Design, Creative Tech',
-    'Sportsman': 'Sports Equipment Design, Tech in Sports'
-  },
-  'Teacher/Educator': {
-    'Doctor/Healthcare Professional': 'Health Educator, Public Health',
-    'Engineer': 'STEM Education, EdTech Developer',
-    'Teacher/Educator': 'Teaching',
-    'Police/Army/Defense Services': 'Police Academy Instructor',
-    'Artist/Creative Fields': 'Arts Educator, Creative Workshop',
-    'Sportsman': 'Physical Education Teacher, Sports Coaching'
-  },
-  'Police/Army/Defense Services': {
-    'Doctor/Healthcare Professional': 'Medical Corps, Paramedic',
-    'Engineer': 'Defense Technology, Cybersecurity',
-    'Teacher/Educator': 'Training Officer, Leadership Coach',
-    'Police/Army/Defense Services': 'Defense Services',
-    'Artist/Creative Fields': 'Crisis Communication, Tactical Media',
-    'Sportsman': 'Physical Training Instructor, Sports in Defense'
-  },
-  'Artist/Creative Fields': {
-    'Doctor/Healthcare Professional': 'Medical Illustration, Therapeutic Arts',
-    'Engineer': 'Creative Tech, Animation Engineering',
-    'Teacher/Educator': 'Arts Educator, Drama Teacher',
-    'Police/Army/Defense Services': 'Media Relations, Creative Communication',
-    'Artist/Creative Fields': 'Creative Fields',
-    'Sportsman': 'Sports Branding, Performance Arts'
-  },
-  'Sportsman': {
-    'Doctor/Healthcare Professional': 'Sports Medicine, Physiotherapy',
-    'Engineer': 'Sports Tech, Equipment Design',
-    'Teacher/Educator': 'Physical Education Teacher, Coach',
-    'Police/Army/Defense Services': 'Physical Training Instructor',
-    'Artist/Creative Fields': 'Sports Branding, Sports Media',
-    'Sportsman': 'Professional Athlete, Sports Management'
-  }
-};
+// New Career API URL
+const CAREER_API_URL = 'https://script.google.com/macros/s/AKfycby7w-KbpF5aeh_DS7s_bkZkckUlIJvQDTTLT7jpKfedYtPOW1u0GF1Okuqmi0TJy5Ph/exec';
 
 const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizData }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [childClass, setChildClass] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [apiCareerSuggestion, setApiCareerSuggestion] = useState('');
+  const [isLoadingCareerSuggestion, setIsLoadingCareerSuggestion] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -98,9 +51,48 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizDat
     return () => clearInterval(timer);
   }, []);
 
-  const getCombinedCareerPath = () => {
-    if (!quizData) return 'Exciting new possibilities await!';
-    return careerCombinations[quizData.parentChoice as keyof typeof careerCombinations]?.[quizData.childChoice as keyof typeof careerCombinations[keyof typeof careerCombinations]] || 'Exciting new possibilities await!';
+  // Fetch career suggestion from API
+  useEffect(() => {
+    if (quizData?.parentChoice && quizData?.childChoice) {
+      fetchCareerSuggestion();
+    }
+  }, [quizData]);
+
+  const fetchCareerSuggestion = async () => {
+    if (!quizData) return;
+    
+    setIsLoadingCareerSuggestion(true);
+    try {
+      console.log('Calling Career API with:', {
+        parentCareer: quizData.parentChoice,
+        kidCareer: quizData.childChoice
+      });
+
+      const response = await fetch(CAREER_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          parentCareer: quizData.parentChoice,
+          kidCareer: quizData.childChoice
+        }),
+      });
+
+      const data = await response.json();
+      console.log('Career API response:', data);
+
+      if (data.status === 'success' && data.feedback) {
+        setApiCareerSuggestion(data.feedback);
+      } else {
+        setApiCareerSuggestion('Exciting new possibilities await! Your unique combination of interests opens doors to innovative career paths.');
+      }
+    } catch (error) {
+      console.error('Error fetching career suggestion:', error);
+      setApiCareerSuggestion('Exciting new possibilities await! Your unique combination of interests opens doors to innovative career paths.');
+    } finally {
+      setIsLoadingCareerSuggestion(false);
+    }
   };
 
   const sendToGoogleSheet = async (formData: {
@@ -108,10 +100,10 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizDat
     childChoice: string;
     childClass: string;
     whatsappNumber: string;
+    apiCareerSuggestion: string;
   }) => {
     try {
       const isMatch = formData.parentChoice.toLowerCase() === formData.childChoice.toLowerCase();
-      const suggestedCareer = getCombinedCareerPath();
       
       const dataToSend = {
         timestamp: new Date().toISOString(),
@@ -121,7 +113,7 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizDat
         whatsappNumber: formData.whatsappNumber,
         isMatch: isMatch,
         matchStatus: isMatch ? 'Perfect Match' : 'Different Dreams',
-        suggestedCareer: suggestedCareer,
+        suggestedCareer: formData.apiCareerSuggestion,
       };
 
       console.log('Sending data to Google Sheet:', dataToSend);
@@ -149,11 +141,16 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizDat
         childChoice: quizData.childChoice,
         childClass: childClass || 'Not specified',
         whatsappNumber: whatsappNumber || 'Not provided',
+        apiCareerSuggestion: apiCareerSuggestion || 'API suggestion not available',
       });
     }
 
     setTimeout(() => {
-      onComplete({ childClass: childClass || 'Not specified', whatsappNumber: whatsappNumber || 'Not provided' });
+      onComplete({ 
+        childClass: childClass || 'Not specified', 
+        whatsappNumber: whatsappNumber || 'Not provided',
+        apiCareerSuggestion: apiCareerSuggestion || 'Exciting new possibilities await!'
+      });
     }, 1000);
   };
 
@@ -164,11 +161,16 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizDat
         childChoice: quizData.childChoice,
         childClass: 'Skipped',
         whatsappNumber: 'Skipped',
+        apiCareerSuggestion: apiCareerSuggestion || 'API suggestion not available',
       });
     }
 
     setTimeout(() => {
-      onComplete({ childClass: 'Not specified', whatsappNumber: 'Not provided' });
+      onComplete({ 
+        childClass: 'Not specified', 
+        whatsappNumber: 'Not provided',
+        apiCareerSuggestion: apiCareerSuggestion || 'Exciting new possibilities await!'
+      });
     }, 1000);
   };
 
@@ -239,9 +241,10 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizDat
           <div className="text-center mt-8 space-y-4">
             <Button
               onClick={handleSubmit}
-              className="bg-orange-500 hover:bg-orange-600 text-white text-xl px-12 py-4 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 w-full"
+              disabled={isLoadingCareerSuggestion}
+              className="bg-orange-500 hover:bg-orange-600 text-white text-xl px-12 py-4 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 w-full disabled:opacity-50"
             >
-              Generate My Results! ✨
+              {isLoadingCareerSuggestion ? 'Generating Suggestions...' : 'Generate My Results! ✨'}
             </Button>
             
             <Button
@@ -261,7 +264,7 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizDat
               <span className="text-white text-2xl">🧬</span>
             </div>
             <h3 className="text-lg font-semibold text-orange-700 mb-2">
-              Processing in background...
+              {isLoadingCareerSuggestion ? 'Generating career suggestions...' : 'Processing in background...'}
             </h3>
           </div>
           
