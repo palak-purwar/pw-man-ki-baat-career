@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,11 +21,55 @@ const processingSteps = [
   { text: "Finalizing recommendations...", progress: 100 }
 ];
 
+// Updated Google Apps Script URL for career suggestions
+const CAREER_API_URL = 'https://script.google.com/macros/s/AKfycbwfxkVLpCxrJC5YtwKFiDdM-6x7Fg17Wfi4pOSfHDtIVwZ8Ai2ecj18IMxk3WYPsdDV/exec';
+
 // Hardcoded Google Apps Script URL for data logging
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw4BJbIXZsAVM0QsbFPkA_DIxj9mt4CaJzH_-Cf6xbluSVA2iWRs3iwYG6X3uf2UzeZSw/exec';
 
-// New Career API URL
-const CAREER_API_URL = 'https://script.google.com/macros/s/AKfycby7w-KbpF5aeh_DS7s_bkZkckUlIJvQDTTLT7jpKfedYtPOW1u0GF1Okuqmi0TJy5Ph/exec';
+// Original career matrix for fallback
+const getCareerCombination = (parentChoice: string, childChoice: string): string => {
+  const careerMatrix: { [key: string]: { [key: string]: string } } = {
+    "Doctor": {
+      "Doctor": "Medical Research or Specialized Medicine - Follow your shared passion for healing and make groundbreaking discoveries!",
+      "Engineer": "Biomedical Engineering - Design medical devices and technology that save lives!",
+      "Teacher": "Medical Education - Become a professor at medical colleges, shaping the next generation of doctors!",
+      "Artist": "Medical Illustration - Create detailed anatomical drawings and educational materials for medical field!",
+      "Sportsman": "Sports Medicine - Help athletes recover and perform at their best using medical expertise!"
+    },
+    "Engineer": {
+      "Doctor": "Biomedical Engineering - Design medical devices and technology that save lives!",
+      "Engineer": "Advanced Engineering - Specialize in cutting-edge fields like AI, robotics, or aerospace engineering!",
+      "Teacher": "Engineering Education - Become a professor and inspire future engineers with practical knowledge!",
+      "Artist": "Creative Technology - Design beautiful user interfaces and digital experiences!",
+      "Sportsman": "Sports Technology - Create innovative sports equipment and performance analysis systems!"
+    },
+    "Teacher": {
+      "Doctor": "Medical Education - Teach medical students and contribute to healthcare education!",
+      "Engineer": "STEM Education - Inspire students in science, technology, engineering, and mathematics!",
+      "Teacher": "Educational Leadership - Become a principal, educational consultant, or curriculum designer!",
+      "Artist": "Arts Education - Share your passion for creativity and inspire artistic expression!",
+      "Sportsman": "Physical Education - Combine teaching with sports to promote healthy lifestyles!"
+    },
+    "Artist": {
+      "Doctor": "Medical Art - Create medical illustrations, therapy through art, or aesthetic medicine!",
+      "Engineer": "Design Engineering - Combine creativity with technical skills in product design!",
+      "Teacher": "Art Education - Share your passion for creativity and inspire artistic expression!",
+      "Artist": "Professional Arts - Pursue fine arts, digital media, or creative entrepreneurship!",
+      "Sportsman": "Sports Design - Design athletic wear, equipment, or create sports-related artwork!"
+    },
+    "Sportsman": {
+      "Doctor": "Sports Medicine - Help athletes and promote fitness through medical expertise!",
+      "Engineer": "Sports Technology - Develop innovative training equipment and performance analytics!",
+      "Teacher": "Sports Education - Become a PE teacher or sports coach at schools!",
+      "Artist": "Sports Media - Create sports content, photography, or athletic brand design!",
+      "Sportsman": "Professional Sports - Excel in athletics, coaching, or sports management!"
+    }
+  };
+
+  return careerMatrix[parentChoice]?.[childChoice] || 
+         "Exciting new possibilities await! Your unique combination of interests opens doors to innovative career paths.";
+};
 
 const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizData }) => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -51,7 +94,7 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizDat
     return () => clearInterval(timer);
   }, []);
 
-  // Fetch career suggestion from API
+  // Fetch career suggestion from API with timeout fallback
   useEffect(() => {
     if (quizData?.parentChoice && quizData?.childChoice) {
       fetchCareerSuggestion();
@@ -68,6 +111,10 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizDat
         kidCareer: quizData.childChoice
       });
 
+      // Create AbortController for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
       const response = await fetch(CAREER_API_URL, {
         method: 'POST',
         headers: {
@@ -77,19 +124,29 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizDat
           parentCareer: quizData.parentChoice,
           kidCareer: quizData.childChoice
         }),
+        signal: controller.signal,
       });
 
+      clearTimeout(timeoutId);
       const data = await response.json();
       console.log('Career API response:', data);
 
       if (data.status === 'success' && data.feedback) {
         setApiCareerSuggestion(data.feedback);
       } else {
-        setApiCareerSuggestion('Exciting new possibilities await! Your unique combination of interests opens doors to innovative career paths.');
+        // Fallback to original matrix
+        const fallbackSuggestion = getCareerCombination(quizData.parentChoice, quizData.childChoice);
+        setApiCareerSuggestion(fallbackSuggestion);
       }
     } catch (error) {
       console.error('Error fetching career suggestion:', error);
-      setApiCareerSuggestion('Exciting new possibilities await! Your unique combination of interests opens doors to innovative career paths.');
+      // Fallback to original matrix
+      const fallbackSuggestion = getCareerCombination(quizData.parentChoice, quizData.childChoice);
+      setApiCareerSuggestion(fallbackSuggestion);
+      
+      if (error.name === 'AbortError') {
+        console.log('API request timed out, using fallback');
+      }
     } finally {
       setIsLoadingCareerSuggestion(false);
     }
