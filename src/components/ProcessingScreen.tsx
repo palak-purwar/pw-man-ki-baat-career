@@ -21,8 +21,8 @@ const processingSteps = [
   { text: "Finalizing recommendations...", progress: 100 }
 ];
 
-// Updated Google Apps Script URL for career suggestions
-const CAREER_API_URL = 'https://script.google.com/macros/s/AKfycbyevSps0MQINwzF2y9tDKQY3MwI3R4xtBMcFTK6aMq2BG0P9XCCA1zPHBg7VBqDfsYX/exec';
+// Updated career API URL
+const CAREER_API_URL = 'https://curiousjr-k8-stage-api.penpencil.co/v1/public/career/suggest';
 
 // Hardcoded Google Apps Script URL for data logging
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw4BJbIXZsAVM0QsbFPkA_DIxj9mt4CaJzH_-Cf6xbluSVA2iWRs3iwYG6X3uf2UzeZSw/exec';
@@ -128,13 +128,20 @@ const ProcessingScreen: React.FC<ProcessingScreenProps> = ({ onComplete, quizDat
       });
 
       clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
       console.log('Career API response:', data);
 
-      if (data.status === 'success' && data.feedback) {
-        setApiCareerSuggestion(data.feedback);
+      // Handle the new API response format
+      if (data.statusCode === "10000" && data.data?.status === 'success' && data.data?.feedback) {
+        setApiCareerSuggestion(data.data.feedback);
       } else {
-        // Fallback to original matrix
+        // Handle API error responses
+        console.log('API returned error or unexpected format:', data);
         const fallbackSuggestion = getCareerCombination(quizData.parentChoice, quizData.childChoice);
         setApiCareerSuggestion(fallbackSuggestion);
       }
